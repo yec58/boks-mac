@@ -113,7 +113,7 @@
         <div id="cd-right" class="cd-box">SAĞ KOL<span id="cd-right-text">HAZIR</span></div>
     </div>
 
-    <div id="controls-info"><b>WASD:</b> Hareket | <b>SPACE:</b> Zıpla | <b>Sol Tık:</b> Sol Yumruk | <b>Sağ Tık:</b> Sağ Yumruk</div>
+    <div id="controls-info"><b>WASD:</b> Hareket | <b>SPACE:</b> Zıpla | <b>Sol Tık:</b> Sol Yumruk | <b>Sağ Tık:</b> Sağ Yumruk | <b>Q:</b> Sol Blok | <b>E:</b> Sağ Blok | <b>C:</b> Sol Aparkat | <b>V:</b> Sağ Aparkat</div>
 
     <div id="main-menu">
         <h1>BOKS ŞAMPİYONASI</h1>
@@ -488,6 +488,25 @@
         document.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
             if (k in keys) keys[k] = true;
+
+            if (document.pointerLockElement === document.body && !isKnockedOut && !isRoundTransition) {
+                if (k === 'q') isBlockingLeft = true;
+                if (k === 'e') isBlockingRight = true;
+
+                if (k === 'c' && leftArmCD <= 0 && !isUppercutLeft && !isBlockingLeft) {
+                    isUppercutLeft = true;
+                    uppercutLeftProgress = 0;
+                    leftArmCD = 0.8;
+                    checkHit(30 + Math.floor(Math.random() * 8));
+                }
+
+                if (k === 'v' && rightArmCD <= 0 && !isUppercutRight && !isBlockingRight) {
+                    isUppercutRight = true;
+                    uppercutRightProgress = 0;
+                    rightArmCD = 0.8;
+                    checkHit(34 + Math.floor(Math.random() * 8));
+                }
+            }
             if (e.code === 'Space' && isGrounded && document.pointerLockElement === document.body) {
                 velocityY = jumpStrength;
                 isGrounded = false;
@@ -496,6 +515,8 @@
         document.addEventListener('keyup', (e) => {
             const k = e.key.toLowerCase();
             if (k in keys) keys[k] = false;
+            if (k === 'q') isBlockingLeft = false;
+            if (k === 'e') isBlockingRight = false;
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -522,6 +543,10 @@
 
         let playerHealth = 100, enemyHealth = 100;
         let isAttackingLeft = false, isAttackingRight = false;
+        let isBlockingLeft = false, isBlockingRight = false;
+        let isUppercutLeft = false, isUppercutRight = false;
+        let uppercutLeftProgress = 0, uppercutRightProgress = 0;
+        let blockLeftProgress = 0, blockRightProgress = 0;
         let leftProgress = 0, rightProgress = 0;
         let isKnockedOut = false;
 
@@ -543,12 +568,12 @@
         document.addEventListener('mousedown', (e) => {
             if (document.pointerLockElement !== document.body || isKnockedOut || isRoundTransition) return;
 
-            if (e.button === 0 && leftArmCD <= 0 && !isAttackingLeft) {
+            if (e.button === 0 && leftArmCD <= 0 && !isAttackingLeft && !isUppercutLeft && !isBlockingLeft) {
                 isAttackingLeft = true;
                 leftArmCD = ATTACK_COOLDOWN_TIME;
                 checkHit(18 + Math.floor(Math.random() * 6));
             } 
-            else if (e.button === 2 && rightArmCD <= 0 && !isAttackingRight) {
+            else if (e.button === 2 && rightArmCD <= 0 && !isAttackingRight && !isUppercutRight && !isBlockingRight) {
                 isAttackingRight = true;
                 rightArmCD = ATTACK_COOLDOWN_TIME;
                 checkHit(23 + Math.floor(Math.random() * 6));
@@ -578,6 +603,12 @@
 
         function damagePlayer(damage) {
             if (isKnockedOut || isRoundTransition) return;
+
+            // Blok: gelen hasarı büyük ölçüde azaltır.
+            if (isBlockingLeft || isBlockingRight) {
+                damage *= 0.2;
+            }
+
             playerHealth -= damage;
             updateHealthUI();
 
@@ -802,6 +833,55 @@
                     rightProgress += delta * 25;
                     rightHand.position.z = -0.5 - Math.sin(rightProgress) * 0.45;
                     if (rightProgress >= Math.PI) { rightProgress = 0; isAttackingRight = false; rightHand.position.z = -0.5; }
+                }
+
+                // Sol blok / sağ blok animasyonu
+                if (isBlockingLeft) {
+                    blockLeftProgress += delta * 10;
+                    leftHand.position.set(-0.5, 0.05, -0.7);
+                    leftHand.rotation.x = -0.5;
+                } else {
+                    leftHand.position.set(-0.35, -0.25, -0.5);
+                    leftHand.rotation.set(0, 0, 0);
+                    blockLeftProgress = 0;
+                }
+
+                if (isBlockingRight) {
+                    blockRightProgress += delta * 10;
+                    rightHand.position.set(0.5, 0.05, -0.7);
+                    rightHand.rotation.x = -0.5;
+                } else {
+                    rightHand.position.set(0.35, -0.25, -0.5);
+                    rightHand.rotation.set(0, 0, 0);
+                    blockRightProgress = 0;
+                }
+
+                // Sol aparkat
+                if (isUppercutLeft) {
+                    uppercutLeftProgress += delta * 18;
+                    const p = Math.sin(Math.min(uppercutLeftProgress, Math.PI));
+                    leftHand.position.set(-0.35, -0.25 + p * 0.75, -0.5 - p * 0.2);
+                    leftHand.rotation.x = -p * 0.8;
+                    if (uppercutLeftProgress >= Math.PI) {
+                        isUppercutLeft = false;
+                        uppercutLeftProgress = 0;
+                        leftHand.position.set(-0.35, -0.25, -0.5);
+                        leftHand.rotation.set(0, 0, 0);
+                    }
+                }
+
+                // Sağ aparkat
+                if (isUppercutRight) {
+                    uppercutRightProgress += delta * 18;
+                    const p = Math.sin(Math.min(uppercutRightProgress, Math.PI));
+                    rightHand.position.set(0.35, -0.25 + p * 0.75, -0.5 - p * 0.2);
+                    rightHand.rotation.x = -p * 0.8;
+                    if (uppercutRightProgress >= Math.PI) {
+                        isUppercutRight = false;
+                        uppercutRightProgress = 0;
+                        rightHand.position.set(0.35, -0.25, -0.5);
+                        rightHand.rotation.set(0, 0, 0);
+                    }
                 }
 
                 updateBotAI(delta);
