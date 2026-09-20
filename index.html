@@ -829,11 +829,10 @@
                 camera.position.z = Math.max(-4.5, Math.min(4.5, camera.position.z));
 
                 if (isAttackingLeft) {
-                    leftProgress += delta * 18;
+                    leftProgress += delta * 14;
                     const p = Math.sin(Math.min(leftProgress, Math.PI));
-                    leftHand.position.z = -0.5 - p * 0.75;
-                    leftHand.position.x = -0.35 + p * 0.08;
-                    leftHand.rotation.x = -p * 0.35;
+                    leftHand.position.set(-0.35 + p * 0.10, -0.25 + p * 0.02, -0.5 - p * 0.95);
+                    leftHand.rotation.set(-p * 0.45, p * 0.12, -p * 0.18);
                     if (leftProgress >= Math.PI) {
                         leftProgress = 0; isAttackingLeft = false;
                         leftHand.position.set(-0.35, -0.25, -0.5);
@@ -841,11 +840,10 @@
                     }
                 }
                 if (isAttackingRight) {
-                    rightProgress += delta * 18;
+                    rightProgress += delta * 14;
                     const p = Math.sin(Math.min(rightProgress, Math.PI));
-                    rightHand.position.z = -0.5 - p * 0.75;
-                    rightHand.position.x = 0.35 - p * 0.08;
-                    rightHand.rotation.x = -p * 0.35;
+                    rightHand.position.set(0.35 - p * 0.10, -0.25 + p * 0.02, -0.5 - p * 0.95);
+                    rightHand.rotation.set(-p * 0.45, -p * 0.12, p * 0.18);
                     if (rightProgress >= Math.PI) {
                         rightProgress = 0; isAttackingRight = false;
                         rightHand.position.set(0.35, -0.25, -0.5);
@@ -853,33 +851,39 @@
                     }
                 }
 
-                // Sol blok / sağ blok animasyonu
+                // Yeni sol blok: el yüzün önüne yükselip yana açılıyor.
                 if (isBlockingLeft) {
-                    blockLeftProgress += delta * 10;
-                    leftHand.position.set(-0.5, 0.05, -0.7);
-                    leftHand.rotation.x = -0.5;
+                    blockLeftProgress = Math.min(1, blockLeftProgress + delta * 8);
+                    const p = 1 - Math.pow(1 - blockLeftProgress, 3);
+                    leftHand.position.set(-0.55 + p * 0.08, -0.10 + p * 0.38, -0.50 - p * 0.28);
+                    leftHand.rotation.set(-0.95 + p * 0.25, 0.15, -0.25);
                 } else {
-                    leftHand.position.set(-0.35, -0.25, -0.5);
-                    leftHand.rotation.set(0, 0, 0);
-                    blockLeftProgress = 0;
+                    blockLeftProgress = Math.max(0, blockLeftProgress - delta * 10);
+                    const p = blockLeftProgress;
+                    leftHand.position.set(-0.35, -0.25 + p * 0.38, -0.5 - p * 0.28);
+                    leftHand.rotation.set(-p * 0.7, p * 0.1, -p * 0.15);
                 }
 
+                // Yeni sağ blok: el yüzün önüne yükselip yana açılıyor.
                 if (isBlockingRight) {
-                    blockRightProgress += delta * 10;
-                    rightHand.position.set(0.5, 0.05, -0.7);
-                    rightHand.rotation.x = -0.5;
+                    blockRightProgress = Math.min(1, blockRightProgress + delta * 8);
+                    const p = 1 - Math.pow(1 - blockRightProgress, 3);
+                    rightHand.position.set(0.55 - p * 0.08, -0.10 + p * 0.38, -0.50 - p * 0.28);
+                    rightHand.rotation.set(-0.95 + p * 0.25, -0.15, 0.25);
                 } else {
-                    rightHand.position.set(0.35, -0.25, -0.5);
-                    rightHand.rotation.set(0, 0, 0);
-                    blockRightProgress = 0;
+                    blockRightProgress = Math.max(0, blockRightProgress - delta * 10);
+                    const p = blockRightProgress;
+                    rightHand.position.set(0.35, -0.25 + p * 0.38, -0.5 - p * 0.28);
+                    rightHand.rotation.set(-p * 0.7, -p * 0.1, p * 0.15);
                 }
 
-                // Sol aparkat
+                // Yeni sol aparkat: el aşağıdan içeri girip çeneye doğru sertçe yükseliyor.
                 if (isUppercutLeft) {
-                    uppercutLeftProgress += delta * 18;
+                    uppercutLeftProgress += delta * 12;
                     const p = Math.sin(Math.min(uppercutLeftProgress, Math.PI));
-                    leftHand.position.set(-0.35, -0.25 + p * 0.75, -0.5 - p * 0.2);
-                    leftHand.rotation.x = -p * 0.8;
+                    const lift = p * 0.95;
+                    leftHand.position.set(-0.35 + p * 0.16, -0.25 + lift, -0.5 - p * 0.42);
+                    leftHand.rotation.set(-p * 1.25, p * 0.18, -p * 0.12);
                     if (uppercutLeftProgress >= Math.PI) {
                         isUppercutLeft = false;
                         uppercutLeftProgress = 0;
@@ -888,12 +892,13 @@
                     }
                 }
 
-                // Sağ aparkat
+                // Yeni sağ aparkat
                 if (isUppercutRight) {
-                    uppercutRightProgress += delta * 18;
+                    uppercutRightProgress += delta * 12;
                     const p = Math.sin(Math.min(uppercutRightProgress, Math.PI));
-                    rightHand.position.set(0.35, -0.25 + p * 0.75, -0.5 - p * 0.2);
-                    rightHand.rotation.x = -p * 0.8;
+                    const lift = p * 0.95;
+                    rightHand.position.set(0.35 - p * 0.16, -0.25 + lift, -0.5 - p * 0.42);
+                    rightHand.rotation.set(-p * 1.25, -p * 0.18, p * 0.12);
                     if (uppercutRightProgress >= Math.PI) {
                         isUppercutRight = false;
                         uppercutRightProgress = 0;
