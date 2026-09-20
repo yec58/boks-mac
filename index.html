@@ -855,7 +855,7 @@
                         ? t * 2
                         : (1 - t) * 2;
 
-                    // Sağ kol da aynı şekilde düz öne fırlayıp geri geliyor.
+                    // Sağ yumruk: sadece sağ tık ile tetiklenir; kol ileri fırlayıp geri gelir.
                     rightHand.position.x = 0.35;
                     rightHand.position.y = -0.25;
                     rightHand.position.z = -0.5 - punch * 1.55;
@@ -868,8 +868,10 @@
                     }
                 }
 
-                // Yeni sol blok: el yüzün önüne yükselip yana açılıyor.
-                if (isBlockingLeft) {
+                // Yumruk animasyonu oynarken blok/aparkat kodları eli ezmesin.
+                if (!isAttackingLeft && !isAttackingRight) {
+                    // Yeni sol blok: el yüzün önüne yükselip yana açılıyor.
+                    if (isBlockingLeft) {
                     blockLeftProgress = Math.min(1, blockLeftProgress + delta * 8);
                     const p = 1 - Math.pow(1 - blockLeftProgress, 3);
                     leftHand.position.set(-0.55 + p * 0.08, -0.10 + p * 0.38, -0.50 - p * 0.28);
@@ -881,8 +883,8 @@
                     leftHand.rotation.set(-p * 0.7, p * 0.1, -p * 0.15);
                 }
 
-                // Yeni sağ blok: el yüzün önüne yükselip yana açılıyor.
-                if (isBlockingRight) {
+                    // Yeni sağ blok: el yüzün önüne yükselip yana açılıyor.
+                    if (isBlockingRight) {
                     blockRightProgress = Math.min(1, blockRightProgress + delta * 8);
                     const p = 1 - Math.pow(1 - blockRightProgress, 3);
                     rightHand.position.set(0.55 - p * 0.08, -0.10 + p * 0.38, -0.50 - p * 0.28);
@@ -894,8 +896,8 @@
                     rightHand.rotation.set(-p * 0.7, -p * 0.1, p * 0.15);
                 }
 
-                // Yeni sol aparkat: el aşağıdan içeri girip çeneye doğru sertçe yükseliyor.
-                if (isUppercutLeft) {
+                    // Yeni sol aparkat: el aşağıdan içeri girip çeneye doğru sertçe yükseliyor.
+                    if (isUppercutLeft) {
                     uppercutLeftProgress += delta * 12;
                     const p = Math.sin(Math.min(uppercutLeftProgress, Math.PI));
                     const lift = p * 0.95;
@@ -909,8 +911,8 @@
                     }
                 }
 
-                // Yeni sağ aparkat
-                if (isUppercutRight) {
+                    // Yeni sağ aparkat
+                    if (isUppercutRight) {
                     uppercutRightProgress += delta * 12;
                     const p = Math.sin(Math.min(uppercutRightProgress, Math.PI));
                     const lift = p * 0.95;
@@ -921,6 +923,7 @@
                         uppercutRightProgress = 0;
                         rightHand.position.set(0.35, -0.25, -0.5);
                         rightHand.rotation.set(0, 0, 0);
+                    }
                     }
                 }
 
