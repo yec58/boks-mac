@@ -93,7 +93,7 @@
     <div id="crosshair"></div>
     <div id="hud-container">
         <div class="health-box">
-            <div class="health-label"><span>SEN</span><span id="player-hp-text">100 / 100</span></div>
+            <div class="health-label"><span>SEN</span><span id="player-hp-text">200 / 200</span></div>
             <div class="health-bar-bg"><div id="player-hp" class="health-bar-fill"></div></div>
         </div>
 
@@ -103,7 +103,7 @@
         </div>
 
         <div class="health-box">
-            <div class="health-label"><span id="enemy-name-label">RAKİP</span><span id="enemy-hp-text">100 / 100</span></div>
+            <div class="health-label"><span id="enemy-name-label">RAKİP</span><span id="enemy-hp-text">200 / 200</span></div>
             <div class="health-bar-bg"><div id="enemy-hp" class="health-bar-fill"></div></div>
         </div>
     </div>
@@ -541,7 +541,7 @@
             }
         });
 
-        let playerHealth = 100, enemyHealth = 100;
+        let playerHealth = 200, enemyHealth = 200;
         let isAttackingLeft = false, isAttackingRight = false;
         let isBlockingLeft = false, isBlockingRight = false;
         let isUppercutLeft = false, isUppercutRight = false;
@@ -555,10 +555,10 @@
         const ATTACK_COOLDOWN_TIME = 0.5;
 
         function updateHealthUI() {
-            document.getElementById('player-hp').style.width = Math.max(0, playerHealth) + '%';
-            document.getElementById('player-hp-text').innerText = `${Math.max(0, Math.round(playerHealth))} / 100`;
-            document.getElementById('enemy-hp').style.width = Math.max(0, enemyHealth) + '%';
-            document.getElementById('enemy-hp-text').innerText = `${Math.max(0, Math.round(enemyHealth))} / 100`;
+            document.getElementById('player-hp').style.width = Math.max(0, Math.min(100, playerHealth / 2)) + '%';
+            document.getElementById('player-hp-text').innerText = `${Math.max(0, Math.round(playerHealth))} / 200`;
+            document.getElementById('enemy-hp').style.width = Math.max(0, Math.min(100, enemyHealth / 2)) + '%';
+            document.getElementById('enemy-hp-text').innerText = `${Math.max(0, Math.round(enemyHealth))} / 200`;
             
             document.getElementById('score-text').innerText = `${playerScore} - ${enemyScore}`;
             document.getElementById('round-text').innerText = `RAUNT ${currentRound}`;
@@ -604,8 +604,12 @@
         function damagePlayer(damage) {
             if (isKnockedOut || isRoundTransition) return;
 
-            // Blok: gelen hasarı büyük ölçüde azaltır.
-            if (isBlockingLeft || isBlockingRight) {
+            const enemyRelativeX = botGroup.position.x - camera.position.x;
+            const incomingFromRight = enemyRelativeX > 0;
+            const incomingFromLeft = enemyRelativeX < 0;
+
+            // Q = sol tarafı, E = sağ tarafı korur.
+            if ((isBlockingLeft && incomingFromLeft) || (isBlockingRight && incomingFromRight)) {
                 damage *= 0.2;
             }
 
@@ -679,8 +683,8 @@
             playerScore = 0;
             enemyScore = 0;
             currentRound = 1;
-            playerHealth = 100;
-            enemyHealth = 100;
+            playerHealth = 200;
+            enemyHealth = 200;
             isKnockedOut = false;
             isRoundTransition = false;
             resetPositions();
@@ -825,14 +829,28 @@
                 camera.position.z = Math.max(-4.5, Math.min(4.5, camera.position.z));
 
                 if (isAttackingLeft) {
-                    leftProgress += delta * 25;
-                    leftHand.position.z = -0.5 - Math.sin(leftProgress) * 0.45;
-                    if (leftProgress >= Math.PI) { leftProgress = 0; isAttackingLeft = false; leftHand.position.z = -0.5; }
+                    leftProgress += delta * 18;
+                    const p = Math.sin(Math.min(leftProgress, Math.PI));
+                    leftHand.position.z = -0.5 - p * 0.75;
+                    leftHand.position.x = -0.35 + p * 0.08;
+                    leftHand.rotation.x = -p * 0.35;
+                    if (leftProgress >= Math.PI) {
+                        leftProgress = 0; isAttackingLeft = false;
+                        leftHand.position.set(-0.35, -0.25, -0.5);
+                        leftHand.rotation.set(0, 0, 0);
+                    }
                 }
                 if (isAttackingRight) {
-                    rightProgress += delta * 25;
-                    rightHand.position.z = -0.5 - Math.sin(rightProgress) * 0.45;
-                    if (rightProgress >= Math.PI) { rightProgress = 0; isAttackingRight = false; rightHand.position.z = -0.5; }
+                    rightProgress += delta * 18;
+                    const p = Math.sin(Math.min(rightProgress, Math.PI));
+                    rightHand.position.z = -0.5 - p * 0.75;
+                    rightHand.position.x = 0.35 - p * 0.08;
+                    rightHand.rotation.x = -p * 0.35;
+                    if (rightProgress >= Math.PI) {
+                        rightProgress = 0; isAttackingRight = false;
+                        rightHand.position.set(0.35, -0.25, -0.5);
+                        rightHand.rotation.set(0, 0, 0);
+                    }
                 }
 
                 // Sol blok / sağ blok animasyonu
