@@ -829,23 +829,38 @@
                 camera.position.z = Math.max(-4.5, Math.min(4.5, camera.position.z));
 
                 if (isAttackingLeft) {
-                    leftProgress += delta * 9;
-                    const p = Math.sin(Math.min(leftProgress, Math.PI));
-                    const jab = p * p * (3 - 2 * p);
-                    leftHand.position.set(-0.35 + jab * 0.06, -0.25 + jab * 0.03, -0.5 - jab * 1.45);
-                    leftHand.rotation.set(-jab * 0.15, jab * 0.18, -jab * 0.08);
+                    leftProgress += delta * 12;
+                    const t = Math.min(leftProgress / Math.PI, 1);
+                    const punch = t < 0.5
+                        ? t * 2
+                        : (1 - t) * 2;
+
+                    // Kol tek parça halinde ileri fırlıyor, sonra aynı hattan geri geliyor.
+                    leftHand.position.x = -0.35;
+                    leftHand.position.y = -0.25;
+                    leftHand.position.z = -0.5 - punch * 1.55;
+                    leftHand.rotation.set(0, punch * 0.12, -punch * 0.06);
+
                     if (leftProgress >= Math.PI) {
                         leftProgress = 0; isAttackingLeft = false;
                         leftHand.position.set(-0.35, -0.25, -0.5);
                         leftHand.rotation.set(0, 0, 0);
                     }
                 }
+
                 if (isAttackingRight) {
-                    rightProgress += delta * 9;
-                    const p = Math.sin(Math.min(rightProgress, Math.PI));
-                    const jab = p * p * (3 - 2 * p);
-                    rightHand.position.set(0.35 - jab * 0.06, -0.25 + jab * 0.03, -0.5 - jab * 1.45);
-                    rightHand.rotation.set(-jab * 0.15, -jab * 0.18, jab * 0.08);
+                    rightProgress += delta * 12;
+                    const t = Math.min(rightProgress / Math.PI, 1);
+                    const punch = t < 0.5
+                        ? t * 2
+                        : (1 - t) * 2;
+
+                    // Sağ kol da aynı şekilde düz öne fırlayıp geri geliyor.
+                    rightHand.position.x = 0.35;
+                    rightHand.position.y = -0.25;
+                    rightHand.position.z = -0.5 - punch * 1.55;
+                    rightHand.rotation.set(0, -punch * 0.12, punch * 0.06);
+
                     if (rightProgress >= Math.PI) {
                         rightProgress = 0; isAttackingRight = false;
                         rightHand.position.set(0.35, -0.25, -0.5);
